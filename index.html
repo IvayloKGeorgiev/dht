@@ -49,12 +49,17 @@
     </div>
   </div>
 
-  <script>
-    const channelID = "2975887";
-    const apiKey = "Q0H6XJFTIWG8YZQQ"; // Optional, if public channel omit this
+ <script>
+  const channelID = "2975887";
+  const readAPIKey = "Q0H6XJFTIWG8YZQQ"; // If public channel, leave empty. If private, add your Read API Key here.
 
-    async function fetchData() {
-      const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=1`;
+  async function fetchData() {
+    let url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?results=1`;
+    if (readAPIKey) {
+      url += `&api_key=${readAPIKey}`;
+    }
+
+    try {
       const res = await fetch(url);
       const data = await res.json();
       const feed = data.feeds[0];
@@ -62,18 +67,23 @@
       const temp = parseFloat(feed.field1).toFixed(1);
       const hum = parseFloat(feed.field2).toFixed(0);
       const batt = parseFloat(feed.field3).toFixed(2);
+      const battP = parseFloat(feed.field4).toFixed(0);
       const updated = feed.created_at;
 
       document.getElementById("temp").innerText = temp + "°C";
       document.getElementById("humidity").innerText = "💧 " + hum + "%";
-      document.getElementById("battery").innerText = "🔋 " + batt + "V";
+      document.getElementById("battery").innerText = "🔋 " + batt + "V (" + battP + "%)";
       document.getElementById("update").innerText = "⏱ " + new Date(updated).toLocaleString();
 
       document.querySelector('.circle').style.setProperty('--val', temp * 3);
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
+  }
 
-    setInterval(fetchData, 5000);
-    fetchData();
-  </script>
+  setInterval(fetchData, 5000);
+  fetchData();
+</script>
+
 </body>
 </html>
